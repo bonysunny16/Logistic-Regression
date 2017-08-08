@@ -13,6 +13,26 @@ QualityLog <- glm(PoorCare ~ Narcotics +OfficeVisits, data = qualityTrain,
                   family = binomial)
 
 summary(QualityLog)
+## Predicitng values in the train dataset
 predictTrain <- predict(QualityLog,type="response")
 summary(predictTrain)
+
+### Confusion matrix based on predicition
+table(qualityTrain$PoorCare,predictTrain >.5)
+
+#### ROC curves (receiver operating characteristics)
+
+##install.packages("ROCR")
+library(ROCR)
+
+ROCRPred <- prediction(predictTrain,qualityTrain$PoorCare)
+ROCRPerf <- performance(ROCRPred,"tpr","fpr")
+plot(ROCRPerf,colorize = TRUE,print.cutoffs.at = seq(0,1,.1),text.adj= c(-.2,1.7))
+
+### outsample prediction
+
+predictTest <- predict(QualityLog,type="response",newdata = qualityTest)
+ROCRPredTest <- prediction(predictTest,qualityTest$PoorCare)
+auc = as.numeric(performance(ROCRPredTest, "auc")@y.values)
+
 
